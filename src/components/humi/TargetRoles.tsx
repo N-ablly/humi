@@ -1,6 +1,6 @@
 import type { TargetRole } from "@/lib/humi/counselling";
 
-export function TargetRoles({ roles }: { roles: TargetRole[] }) {
+export function TargetRoles({ roles, label }: { roles: TargetRole[]; label: string }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {roles.map((r, i) => (
@@ -14,7 +14,7 @@ export function TargetRoles({ roles }: { roles: TargetRole[] }) {
           <p className="mt-2 text-sm text-muted-foreground">{r.why}</p>
           <dl className="mt-4 space-y-2 text-sm">
             <div>
-              <dt className="inline font-semibold">Resume strengths that support it: </dt>
+              <dt className="inline font-semibold">{label}</dt>
               <dd className="inline text-muted-foreground">{r.supports}</dd>
             </div>
             <div>

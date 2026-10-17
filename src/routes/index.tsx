@@ -208,7 +208,7 @@ function HumiApp() {
     setGenFailed(false);
     setPendingInterest(interestData);
 
-    const input = { data: { parsed, interest: interestData, signup } };
+    const input = { data: { parsed, interest: interestData, signup, intakeMethod: intake.method } };
 
     generateCoreStage(input)
       .then((r) => (r.ok ? setCoreData(r.core) : setGenFailed(true)))
@@ -225,7 +225,9 @@ function HumiApp() {
   // deterministic engine, rather than mixing AI-quality and generic content.
   useEffect(() => {
     if (!genFailed || step !== "generating" || !parsed || !signup || !pendingInterest) return;
-    generateFallbackReport({ data: { parsed, interest: pendingInterest, signup } })
+    generateFallbackReport({
+      data: { parsed, interest: pendingInterest, signup, intakeMethod: intake.method },
+    })
       .then(({ report: built, counselling: builtCounselling }) =>
         finalizeReport(built, builtCounselling, pendingInterest),
       )
@@ -247,6 +249,7 @@ function HumiApp() {
         setReport(mine.report);
         setCounselling(mine.counselling);
         setLeadId(mine.id);
+        setIntake({ method: mine.intakeMethod ?? "resume", linkedinUrl: mine.linkedinUrl ?? "" });
         setStep("report");
         return;
       }
@@ -353,6 +356,7 @@ function HumiApp() {
             core={coreData}
             resumeFeedback={resumeFeedbackData}
             rolesAndPlan={rolesAndPlanData}
+            intakeMethod={intake.method}
             onContinue={continueGenerating}
           />
         )}
@@ -363,6 +367,7 @@ function HumiApp() {
             counselling={counselling}
             parsed={parsed}
             signup={signup}
+            intakeMethod={intake.method}
             leadId={leadId}
             onRestart={() => {
               setStep("welcome");

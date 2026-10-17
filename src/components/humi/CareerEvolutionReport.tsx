@@ -11,7 +11,8 @@ import {
   getCandidateMe,
 } from "@/lib/api/candidate-auth.functions";
 import { submitHelpRequest } from "@/lib/api/help-requests.functions";
-import type { ParsedResume, Report, SignupData } from "@/lib/humi/types";
+import type { IntakeMethod, ParsedResume, Report, SignupData } from "@/lib/humi/types";
+import { reportCopy, type ReportCopy } from "@/lib/humi/intake-copy";
 import type { Counselling } from "@/lib/humi/counselling";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -74,10 +75,10 @@ const Section = forwardRef<
   );
 });
 
-const SECTION_TITLES = [
+const sectionTitles = (copy: ReportCopy) => [
   "Your Career Starting Point",
-  "Your Resume Readiness Review",
-  "How to Improve Your Resume",
+  copy.readinessTitle,
+  copy.improveTitle,
   "Your Role Evolution",
   "Roles You Can Start Targeting",
   "AI Impact Map",
@@ -92,7 +93,7 @@ const SECTION_TITLES = [
   "Keywords to Use in Your Job Search",
   "How to Use AI Professionally",
   "Prompts You Can Use Today",
-  "Future Resume Bullets",
+  copy.bulletsTitle,
   "Your Next 7 Days",
   "Your Career Evolution Card",
 ];
@@ -102,6 +103,7 @@ interface Props {
   counselling: Counselling;
   parsed: ParsedResume;
   signup: SignupData;
+  intakeMethod?: IntakeMethod;
   leadId: string | null;
   onRestart: () => void;
 }
@@ -111,9 +113,12 @@ export function CareerEvolutionReport({
   counselling: c,
   parsed,
   signup,
+  intakeMethod,
   leadId,
   onRestart,
 }: Props) {
+  const copy = reportCopy(intakeMethod);
+  const SECTION_TITLES = sectionTitles(copy);
   const topSkills = c.matrix[0]!.items;
 
   const headerRef = useRef<HTMLDivElement>(null);
@@ -287,11 +292,7 @@ export function CareerEvolutionReport({
           <h2 className="mt-4 text-3xl font-extrabold sm:text-4xl">
             {signup.firstName}, here's how your career can evolve with AI
           </h2>
-          <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-            This is a practical plan, not a verdict. It shows what role to target, what to fix on
-            your resume, what to learn first, what to build, and exactly what to do in the next 7
-            days.
-          </p>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground">{copy.headerPlan}</p>
         </div>
 
         <HelpRequestContext.Provider value={setHelpTopic}>
@@ -321,8 +322,7 @@ export function CareerEvolutionReport({
               </p>
               <p className="mt-4 rounded-2xl bg-tint p-4 text-sm leading-relaxed">
                 <span className="font-semibold text-primary">Why we selected this direction: </span>
-                your resume shows clear signals in{" "}
-                {parsed.skills.slice(0, 3).join(", ").toLowerCase()} within{" "}
+                {copy.directionLead} {parsed.skills.slice(0, 3).join(", ").toLowerCase()} within{" "}
                 {parsed.primaryFunction.toLowerCase()}, with {parsed.yearsExperience} of exposure to{" "}
                 {parsed.industryExposure}. Those signals map most directly to {report.futureRole}{" "}
                 work, where your existing strengths stay valuable and AI tools remove the repetitive
@@ -359,20 +359,20 @@ export function CareerEvolutionReport({
 
           <Section
             n={2}
-            title="Your Resume Readiness Review"
-            subtitle="How ready your resume is for future-ready roles today — and the fastest fixes."
+            title={copy.readinessTitle}
+            subtitle={copy.readinessSubtitle}
             ref={setSectionRef(2)}
           >
-            <ResumeReadinessReview items={c.readiness} average={c.readinessAverage} />
+            <ResumeReadinessReview items={c.readiness} average={c.readinessAverage} copy={copy} />
           </Section>
 
           <Section
             n={3}
-            title="How to Improve Your Resume"
-            subtitle="Specific, practical changes you can make this week."
+            title={copy.improveTitle}
+            subtitle={copy.improveSubtitle}
             ref={setSectionRef(3)}
           >
-            <ResumeImprovement c={c} />
+            <ResumeImprovement c={c} copy={copy} />
           </Section>
 
           <Section n={4} title="Your Role Evolution" ref={setSectionRef(4)}>
@@ -417,10 +417,10 @@ export function CareerEvolutionReport({
           <Section
             n={5}
             title="Roles You Can Start Targeting"
-            subtitle="Realistic job titles based on your resume signals and interest."
+            subtitle={copy.rolesSubtitle}
             ref={setSectionRef(5)}
           >
-            <TargetRoles roles={c.targetRoles} />
+            <TargetRoles roles={c.targetRoles} label={copy.strengthsLabel} />
           </Section>
 
           <Section
@@ -530,7 +530,11 @@ export function CareerEvolutionReport({
             subtitle="Here is how each score is calculated and what raises it."
             ref={setSectionRef(13)}
           >
-            <CareerScoreCard report={report} explainers={c.scoreExplainers} />
+            <CareerScoreCard
+              report={report}
+              explainers={c.scoreExplainers}
+              story={copy.scoreStory}
+            />
           </Section>
 
           <Section n={14} title="Your AI-Ready Interview Preparation" ref={setSectionRef(14)}>
@@ -566,7 +570,7 @@ export function CareerEvolutionReport({
 
           <Section
             n={18}
-            title="Future Resume Bullets"
+            title={copy.bulletsTitle}
             subtitle="Some you can use today. Others you earn by finishing a project."
             ref={setSectionRef(18)}
           >
@@ -606,7 +610,7 @@ export function CareerEvolutionReport({
             subtitle={`A short, personalized plan for a ${report.futureRole} track.`}
             ref={setSectionRef(19)}
           >
-            <SevenDayPlan days={c.sevenDays} />
+            <SevenDayPlan days={c.sevenDays} note={copy.sevenDayNote} />
           </Section>
 
           <Section n={20} title="Your Career Evolution Card">

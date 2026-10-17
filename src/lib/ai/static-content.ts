@@ -150,7 +150,7 @@ export const STATIC_TOOL_GROUPS = {
       {
         name: "Claude",
         useCase: "Careful review of long documents.",
-        practice: "Ask it to critique your resume against a job description.",
+        practice: "Ask it to critique your resume, or a first draft, against a job description.",
         resume: "Signals thoughtful, quality-checked AI use.",
       },
     ],

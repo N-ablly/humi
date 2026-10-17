@@ -1,5 +1,6 @@
 import { ArrowRight, Minus, Plus, Ruler, Sparkles } from "lucide-react";
 import type { Counselling } from "@/lib/humi/counselling";
+import type { ReportCopy } from "@/lib/humi/intake-copy";
 
 function List({ icon: Icon, title, items }: { icon: typeof Plus; title: string; items: string[] }) {
   return (
@@ -22,13 +23,13 @@ function List({ icon: Icon, title, items }: { icon: typeof Plus; title: string; 
   );
 }
 
-export function ResumeImprovement({ c }: { c: Counselling }) {
+export function ResumeImprovement({ c, copy }: { c: Counselling; copy: ReportCopy }) {
   return (
     <div className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <List icon={Plus} title="What to add" items={c.resumeAdd} />
-        <List icon={Minus} title="What to reduce" items={c.resumeReduce} />
-        <List icon={Ruler} title="What to make measurable" items={c.resumeMeasurable} />
+        <List icon={Plus} title={copy.addTitle} items={c.resumeAdd} />
+        <List icon={Minus} title={copy.reduceTitle} items={c.resumeReduce} />
+        <List icon={Ruler} title={copy.measurableTitle} items={c.resumeMeasurable} />
         <List icon={Sparkles} title="AI-ready skills to highlight" items={c.resumeHighlight} />
       </div>
 
@@ -45,18 +46,25 @@ export function ResumeImprovement({ c }: { c: Counselling }) {
       </div>
 
       <div className="space-y-4">
-        <p className="text-sm font-extrabold">Before and after resume bullets</p>
+        <p className="text-sm font-extrabold">{copy.rewritesTitle}</p>
         {c.rewrites.map((r) => (
-          <div key={r.before} className="surface-card grid gap-4 p-5 md:grid-cols-[1fr_auto_1fr] md:items-center">
+          <div
+            key={r.before}
+            className="surface-card grid gap-4 p-5 md:grid-cols-[1fr_auto_1fr] md:items-center"
+          >
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Current style</p>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                {copy.rewriteBefore}
+              </p>
               <p className="mt-1.5 text-sm text-muted-foreground">{r.before}</p>
             </div>
             <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground md:inline-flex">
               <ArrowRight className="h-4 w-4" />
             </span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Improved style</p>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
+                {copy.rewriteAfter}
+              </p>
               <p className="mt-1.5 text-sm font-semibold">{r.after}</p>
               {r.earned && (
                 <p className="mt-2 text-xs font-semibold text-primary">

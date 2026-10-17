@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "../humi/supabase.server";
 import { requireAdminSession } from "../humi/session.server";
 import { getCandidateSession } from "../humi/candidate-session.server";
 import type { Counselling } from "../humi/counselling";
-import type { ParsedResume, Report, SignupData } from "../humi/types";
+import type { IntakeMethod, ParsedResume, Report, SignupData } from "../humi/types";
 
 const RESUME_BUCKET = "resumes";
 
@@ -134,6 +134,8 @@ export const submitLead = createServerFn({ method: "POST" })
 export const getMyReport = createServerFn({ method: "GET" }).handler(
   async (): Promise<{
     id: string;
+    intakeMethod: IntakeMethod | null;
+    linkedinUrl: string | null;
     signup: SignupData;
     parsed: ParsedResume;
     report: Report;
@@ -155,6 +157,8 @@ export const getMyReport = createServerFn({ method: "GET" }).handler(
 
     return {
       id: data.id as string,
+      intakeMethod: (data.intake_method as IntakeMethod | null) ?? null,
+      linkedinUrl: (data.linkedin_url as string | null) ?? null,
       signup: {
         firstName: data.first_name as string,
         lastName: data.last_name as string,

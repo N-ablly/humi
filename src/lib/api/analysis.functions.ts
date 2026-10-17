@@ -21,6 +21,7 @@ import {
   buildCounselling as fallbackBuildCounselling,
   type Counselling,
 } from "../humi/counselling";
+import { hasResume, NO_RESUME_PROMPT } from "../humi/intake-copy";
 import type { ParsedResume, Recommendation, Report, SignupData } from "../humi/types";
 
 const signupSchema = z.object({
@@ -155,6 +156,7 @@ const interestSchema = z.object({
 });
 
 const reportInputSchema = z.object({
+  intakeMethod: z.enum(["resume", "linkedin", "typed", "voice"]).optional(),
   parsed: parsedResumeSchema,
   interest: interestSchema,
   signup: signupSchema,
@@ -190,6 +192,12 @@ const REPORT_SYSTEM_PROMPT =
   "recommendation, project, and bullet point must plausibly connect to THIS candidate's real " +
   "background and chosen direction. Be concrete and specific, not vague.";
 
+function reportSystemPrompt(data: z.infer<typeof reportInputSchema>) {
+  return hasResume(data.intakeMethod)
+    ? REPORT_SYSTEM_PROMPT
+    : `${REPORT_SYSTEM_PROMPT} ${NO_RESUME_PROMPT}`;
+}
+
 function reportUserContent(data: z.infer<typeof reportInputSchema>) {
   return JSON.stringify({
     candidateBackground: data.parsed,
@@ -208,7 +216,7 @@ export const generateCoreStage = createServerFn({ method: "POST" })
         max_tokens: 16000,
         thinking: { type: "adaptive" },
         output_config: { format: zodOutputFormat(CoreReportSchema), effort: "high" },
-        system: REPORT_SYSTEM_PROMPT,
+        system: reportSystemPrompt(data),
         messages: [{ role: "user", content: reportUserContent(data) }],
       });
       const core = response.parsed_output;
@@ -233,7 +241,7 @@ export const generateResumeFeedbackStage = createServerFn({ method: "POST" })
           max_tokens: 16000,
           thinking: { type: "adaptive" },
           output_config: { format: zodOutputFormat(ResumeFeedbackSchema), effort: "high" },
-          system: REPORT_SYSTEM_PROMPT,
+          system: reportSystemPrompt(data),
           messages: [{ role: "user", content: reportUserContent(data) }],
         });
         const resumeFeedback = response.parsed_output;
@@ -257,7 +265,7 @@ export const generateRolesAndPlanStage = createServerFn({ method: "POST" })
           max_tokens: 16000,
           thinking: { type: "adaptive" },
           output_config: { format: zodOutputFormat(RolesAndPlanSchema), effort: "high" },
-          system: REPORT_SYSTEM_PROMPT,
+          system: reportSystemPrompt(data),
           messages: [{ role: "user", content: reportUserContent(data) }],
         });
         const rolesAndPlan = response.parsed_output;

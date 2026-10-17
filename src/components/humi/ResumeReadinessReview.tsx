@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { ReadinessItem } from "@/lib/humi/counselling";
+import type { ReportCopy } from "@/lib/humi/intake-copy";
 
 const STATUS_STYLE: Record<ReadinessItem["status"], string> = {
   "Needs Work": "border-primary/40 text-primary",
@@ -7,12 +8,22 @@ const STATUS_STYLE: Record<ReadinessItem["status"], string> = {
   Strong: "border-primary/60 text-primary",
 };
 
-export function ResumeReadinessReview({ items, average }: { items: ReadinessItem[]; average: number }) {
+export function ResumeReadinessReview({
+  items,
+  average,
+  copy,
+}: {
+  items: ReadinessItem[];
+  average: number;
+  copy: ReportCopy;
+}) {
   return (
     <div>
       <div className="tint-card mb-5 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Overall resume readiness</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
+            {copy.readinessOverall}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             You do not need to fix everything at once. Start with the two lowest scores below.
           </p>
@@ -24,8 +35,10 @@ export function ResumeReadinessReview({ items, average }: { items: ReadinessItem
         {items.map((item, i) => (
           <div key={item.label} className="surface-card p-5">
             <div className="flex items-center justify-between gap-3">
-              <p className="font-bold">{item.label}</p>
-              <span className={`rounded-full border px-3 py-1 text-xs font-bold ${STATUS_STYLE[item.status]}`}>
+              <p className="font-bold">{copy.readinessLabel(item.label)}</p>
+              <span
+                className={`rounded-full border px-3 py-1 text-xs font-bold ${STATUS_STYLE[item.status]}`}
+              >
                 {item.score}/100 · {item.status}
               </span>
             </div>

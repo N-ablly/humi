@@ -640,7 +640,7 @@ export function buildCounselling(
       tools: [
         grp("ChatGPT", "Drafting, summarizing and research support.", "Summarize a long document into five bullets and three actions.", "Shows everyday AI fluency in any role."),
         grp("Excel / Google Sheets with AI", "Cleaning, analyzing and presenting data.", "Turn a messy sheet into a clean pivot table summary.", "Still the most requested practical skill in job ads."),
-        grp("Claude", "Careful review of long documents.", "Ask it to critique your resume against a job description.", "Signals thoughtful, quality-checked AI use."),
+        grp("Claude", "Careful review of long documents.", "Ask it to critique your resume, or a first draft, against a job description.", "Signals thoughtful, quality-checked AI use."),
       ],
     },
     {

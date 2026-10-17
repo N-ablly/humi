@@ -30,7 +30,12 @@ function ScoreRing({
           strokeDasharray={`${(value / 100) * c} ${c}`}
           transform="rotate(-90 45 45)"
         />
-        <text x="45" y="50" textAnchor="middle" className="fill-[var(--color-foreground)] text-[18px] font-bold">
+        <text
+          x="45"
+          y="50"
+          textAnchor="middle"
+          className="fill-[var(--color-foreground)] text-[18px] font-bold"
+        >
           {value}
         </text>
       </svg>
@@ -55,9 +60,11 @@ function ScoreRing({
 export function CareerScoreCard({
   report,
   explainers,
+  story = "one improved resume story",
 }: {
   report: Report;
   explainers?: Record<string, { how: string; raise: string }>;
+  story?: string;
 }) {
   return (
     <div>
@@ -74,9 +81,9 @@ export function CareerScoreCard({
         ))}
       </div>
       <p className="mt-5 rounded-2xl bg-tint p-5 text-sm leading-relaxed">
-        Your AI readiness is developing and your career growth potential is high. This is your biggest
-        upside: a focused 90 days on one tool, one project and one improved resume story moves every
-        score above.
+        Your AI readiness is developing and your career growth potential is high. This is your
+        biggest upside: a focused 90 days on one tool, one project and {story} moves every score
+        above.
       </p>
     </div>
   );
