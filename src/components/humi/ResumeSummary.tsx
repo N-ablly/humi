@@ -45,7 +45,7 @@ export function ResumeSummary({ parsed, signup, recommendations, onContinue }: P
     <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="px-5 py-10">
       <div className="mx-auto max-w-5xl">
         <h2 className="text-2xl font-extrabold sm:text-3xl">
-          Here's What Humi.ai Understood From Your Resume
+          Here's What Humi.ai Understood About Your Background
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           A quick, encouraging read of where you stand today — nothing here is a judgement.

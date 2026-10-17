@@ -8,6 +8,21 @@ import type { ParsedResume, Report, SignupData } from "../humi/types";
 
 const RESUME_BUCKET = "resumes";
 
+// Columns added for the event intake flow. If the database hasn't been
+// migrated yet (or its schema cache is stale), lead capture must still work,
+// so a write that trips over them is retried without them.
+const INTAKE_COLUMNS = ["intake_method", "linkedin_url", "source"] as const;
+
+function isMissingIntakeColumn(message: string) {
+  return new RegExp(`\\b(${INTAKE_COLUMNS.join("|")})\\b`).test(message);
+}
+
+function withoutIntakeColumns(payload: Record<string, unknown>) {
+  const rest = { ...payload };
+  for (const c of INTAKE_COLUMNS) delete rest[c];
+  return rest;
+}
+
 export const submitLead = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
     if (!(data instanceof FormData)) {
@@ -62,6 +77,18 @@ export const submitLead = createServerFn({ method: "POST" })
       counselling_json: typeof counsellingJson === "string" ? JSON.parse(counsellingJson) : null,
       parsed_json: typeof parsedJson === "string" ? JSON.parse(parsedJson) : null,
     };
+    // Intake details are only written when the caller sent them, so a later
+    // update (linking the account at PDF download) can't blank them out.
+    for (const [field, column] of [
+      ["intakeMethod", "intake_method"],
+      ["linkedinUrl", "linkedin_url"],
+      ["source", "source"],
+    ] as const) {
+      if (data.has(field)) {
+        payload[column] = String(data.get(field) ?? "").trim() || null;
+      }
+    }
+
     // Only touch the resume columns when this call actually carries a file,
     // so a later update (e.g. linking the account after PDF-gate signup)
     // doesn't null out the resume captured by the original submission.
@@ -74,12 +101,12 @@ export const submitLead = createServerFn({ method: "POST" })
     // to attach the account just created at PDF-download time) — update that
     // row in place instead of inserting a duplicate candidate record.
     if (leadId) {
-      const { data: updated, error: updateError } = await supabase
-        .from("candidates")
-        .update(payload)
-        .eq("id", leadId)
-        .select("id")
-        .maybeSingle();
+      const write = (values: Record<string, unknown>) =>
+        supabase.from("candidates").update(values).eq("id", leadId).select("id").maybeSingle();
+      let { data: updated, error: updateError } = await write(payload);
+      if (updateError && isMissingIntakeColumn(updateError.message)) {
+        ({ data: updated, error: updateError } = await write(withoutIntakeColumns(payload)));
+      }
       if (updateError) {
         throw new Error(`Failed to save candidate: ${updateError.message}`);
       }
@@ -89,7 +116,12 @@ export const submitLead = createServerFn({ method: "POST" })
     }
 
     const id = crypto.randomUUID();
-    const { error } = await supabase.from("candidates").insert({ id, ...payload });
+    let { error } = await supabase.from("candidates").insert({ id, ...payload });
+    if (error && isMissingIntakeColumn(error.message)) {
+      ({ error } = await supabase
+        .from("candidates")
+        .insert({ id, ...withoutIntakeColumns(payload) }));
+    }
     if (error) {
       throw new Error(`Failed to save candidate: ${error.message}`);
     }
@@ -173,6 +205,9 @@ export const getLeads = createServerFn({ method: "GET" }).handler(async () => {
         recommendedRole: row.recommended_role as string,
         careerInterest: row.career_interest as string,
         aiReadiness: row.ai_readiness as number,
+        intakeMethod: (row.intake_method as string | null) ?? null,
+        linkedinUrl: (row.linkedin_url as string | null) ?? null,
+        source: (row.source as string | null) ?? null,
         createdAt: row.created_at as string,
       };
     }),

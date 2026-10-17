@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { FileText } from "lucide-react";
 
 const DEFAULT_MESSAGES = [
-  "Reading your resume…",
+  "Reading your background…",
   "Identifying your experience…",
   "Mapping your skills…",
   "Finding your best-fit roles…",

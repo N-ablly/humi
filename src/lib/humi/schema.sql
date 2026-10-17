@@ -24,6 +24,12 @@ alter table public.candidates add column if not exists user_id uuid references a
 alter table public.candidates add column if not exists report_json jsonb;
 alter table public.candidates add column if not exists counselling_json jsonb;
 alter table public.candidates add column if not exists parsed_json jsonb;
+-- How the visitor shared their background (resume / linkedin / typed / voice),
+-- their LinkedIn link if given, and where the lead came from (e.g. "event" for
+-- the QR code at the booth).
+alter table public.candidates add column if not exists intake_method text;
+alter table public.candidates add column if not exists linkedin_url text;
+alter table public.candidates add column if not exists source text;
 create index if not exists candidates_user_id_idx on public.candidates(user_id);
 
 -- RLS is enabled with no policies: the table is only ever reached through

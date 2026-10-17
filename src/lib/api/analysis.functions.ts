@@ -35,6 +35,7 @@ const signupSchema = z.object({
 
 const analyzeInputSchema = z.object({
   resumeText: z.string().optional(),
+  intakeMethod: z.enum(["resume", "linkedin", "typed", "voice"]).optional(),
   manual: z.object({
     recentRole: z.string(),
     experienceSummary: z.string(),
@@ -53,11 +54,27 @@ function fallbackAnalyze(data: z.infer<typeof analyzeInputSchema>) {
   return { parsed, recommendations };
 }
 
+const INTAKE_NOTES = {
+  resume: "",
+  linkedin:
+    "an excerpt of the candidate's public LinkedIn profile (headline and short summary only — it " +
+    "is much thinner than a full resume, so infer conservatively and do not invent employers, " +
+    "titles or years of experience that the text does not support).",
+  typed:
+    "the candidate typed a short self-description instead of uploading a resume — informal and " +
+    "possibly incomplete, so infer conservatively and do not invent details they did not state.",
+  voice:
+    "the candidate narrated their background aloud and it was transcribed by speech recognition — " +
+    "expect informal phrasing, filler words and possible mis-heard words; interpret the intent " +
+    "sensibly and do not invent details they did not state.",
+} as const;
+
 export const analyzeResume = createServerFn({ method: "POST" })
   .validator(analyzeInputSchema)
   .handler(
     async ({ data }): Promise<{ parsed: ParsedResume; recommendations: Recommendation[] }> => {
       const resumeText = (data.resumeText ?? "").trim();
+      const intakeNote = INTAKE_NOTES[data.intakeMethod ?? "resume"];
       const manualBlob = [
         data.manual.recentRole,
         data.manual.experienceSummary,
@@ -91,6 +108,7 @@ export const analyzeResume = createServerFn({ method: "POST" })
               role: "user",
               content: [
                 `Candidate self-reported career stage: ${data.signup.careerStage || "not specified"}`,
+                intakeNote ? `How this background was provided: ${intakeNote}` : null,
                 resumeText ? `Resume text:\n${resumeText}` : null,
                 manualBlob ? `Manually entered background:\n${manualBlob}` : null,
               ]

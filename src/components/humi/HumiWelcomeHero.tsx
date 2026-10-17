@@ -52,9 +52,9 @@ export function HumiWelcomeHero({
             transition={{ delay: 0.12 }}
             className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
-            Upload your resume and see how your skills, experience, and job interests can evolve in
-            the age of AI. Get a personalized learning path, role recommendations, and AI tools to
-            help you stay ahead.
+            Upload your resume, share your LinkedIn, or just tell us about your work — and see how
+            your skills, experience, and job interests can evolve in the age of AI. Get a
+            personalized learning path, role recommendations, and AI tools to help you stay ahead.
           </motion.p>
 
           <motion.div

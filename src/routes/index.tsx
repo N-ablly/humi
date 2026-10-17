@@ -28,6 +28,7 @@ import { saveProfile } from "@/lib/humi/candidate-profile";
 import type { Counselling } from "@/lib/humi/counselling";
 import type { CoreReportOutput, ResumeFeedbackOutput, RolesAndPlanOutput } from "@/lib/ai/schemas";
 import type {
+  IntakeMethod,
   InterestData,
   ParsedResume,
   Recommendation,
@@ -80,6 +81,17 @@ function HumiApp() {
   const [counselling, setCounselling] = useState<Counselling | null>(null);
   const [resumeFile, setResumeFile] = useState<File | undefined>();
   const [leadId, setLeadId] = useState<string | null>(null);
+  const [intake, setIntake] = useState<{ method: IntakeMethod; linkedinUrl: string }>({
+    method: "resume",
+    linkedinUrl: "",
+  });
+  // QR codes on event materials point at /?src=event so every lead can be
+  // traced back to where it came from.
+  const [leadSource] = useState(() =>
+    typeof window === "undefined"
+      ? "web"
+      : (new URLSearchParams(window.location.search).get("src") ?? "web").slice(0, 40),
+  );
   const [candidateEmail, setCandidateEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -111,11 +123,13 @@ function HumiApp() {
 
   const runParse = async (input: ResumeInput, who: SignupData, file?: File) => {
     setResumeFile(file);
+    setIntake({ method: input.intakeMethod ?? "resume", linkedinUrl: input.linkedinUrl ?? "" });
     setStep("parsing");
     try {
       const { parsed: analyzed, recommendations: recs } = await analyzeResume({
         data: {
           resumeText: input.resumeText,
+          intakeMethod: input.intakeMethod,
           manual: {
             recentRole: input.recentRole,
             experienceSummary: input.experienceSummary,
@@ -169,6 +183,9 @@ function HumiApp() {
     form.set("reportJson", JSON.stringify(built));
     form.set("counsellingJson", JSON.stringify(builtCounselling));
     form.set("parsedJson", JSON.stringify(parsed));
+    form.set("intakeMethod", intake.method);
+    form.set("linkedinUrl", intake.linkedinUrl);
+    form.set("source", leadSource);
     if (resumeFile) form.set("resume", resumeFile);
 
     submitLead({ data: form })

@@ -164,15 +164,15 @@ export function SignupForm({ initial, onSubmit }: Props) {
 
           <p className="flex items-start gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            Your resume and details are used only to generate your career profile. Humi.ai provides
-            career guidance, not hiring decisions.
+            Your details are used only to generate your career profile. Humi.ai provides career
+            guidance, not hiring decisions.
           </p>
 
           <button
             type="submit"
             className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-bold text-primary-foreground shadow-[var(--shadow-lift)] transition hover:brightness-110 sm:w-auto"
           >
-            Continue to Resume Upload
+            Continue
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </button>
         </form>

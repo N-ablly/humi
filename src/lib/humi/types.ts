@@ -16,9 +16,13 @@ export interface SignupData {
   consent: boolean;
 }
 
+export type IntakeMethod = "resume" | "linkedin" | "typed" | "voice";
+
 export interface ResumeInput {
   fileName?: string;
   resumeText?: string;
+  intakeMethod?: IntakeMethod;
+  linkedinUrl?: string;
   recentRole: string;
   experienceSummary: string;
   keySkills: string;
